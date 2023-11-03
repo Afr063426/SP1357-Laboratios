@@ -12,7 +12,7 @@ format:
 
 ---
 
-```{r}
+```{r general set_up}
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 
@@ -29,12 +29,108 @@ tryCatch(
         print("")
     }
 )
-
+source("cod/set_up.R")
 ```
 
 
 # Aplicaciones del método de k-means
-```{r}
-source("./cod/punto_1.R")
 
+
+
+## Notas escolares
+
+
+```{r kmeans_notas_escolares}
+# We read the excel with the data
+df_notas_escolares <- read.xlsx("./data/Ejercicios-Cap3.xlsx", "9.NotasFrancesas")
+
+# We make the name of rows the name of the studentes
+rownames(df_notas_escolares) <- df_notas_escolares[, 1]
+
+# We delete the firs column
+df_notas_escolares <- df_notas_escolares[, -1]
+
+
+# We estimate some of the point asked
+notas_k_2 <- fn_punto_1(df = df_notas_escolares, k = 2)
+notas_k_3 <- fn_punto_1(df = df_notas_escolares, k = 3)
+notas_k_4 <- fn_punto_1(df = df_notas_escolares, k = 4)
+
+
+# We print the summary asked for the point
+notas_k_2$resumen
+notas_k_3$resumen
+notas_k_4$resumen
+```
+
+
+
+## Notas Amiard
+
+
+```{r kmeans_amiard}
+# We read the excel with the data
+df_amiard <- read.xlsx("./data/Ejercicios-Cap3.xlsx", "10.Amiard")
+
+# We make the name of rows the name of the studentes
+rownames(df_amiard) <- df_amiard[, 1]
+
+# We delete the firs column
+df_amiard <- df_amiard[, -1]
+
+
+# We estimate some of the point asked
+notas_k_2 <- fn_punto_1(df = df_amiard, k = 2)
+notas_k_3 <- fn_punto_1(df = df_amiard, k = 3)
+notas_k_4 <- fn_punto_1(df = df_amiard, k = 4)
+
+# We print the summary asked for the point
+notas_k_2$resumen
+notas_k_3$resumen
+notas_k_4$resumen
+```
+
+
+
+## Notas proteinas
+
+
+```{r kmeans_proteinas}
+# We read the excel with the data
+df_proteinas <- read.xlsx("./data/Ejercicios-Cap3.xlsx", "12.Proteinas")
+
+# We make the name of rows the name of the studentes
+rownames(df_proteinas) <- df_proteinas[, 1]
+
+# We delete the firs column
+df_proteinas <- df_proteinas[, -1]
+
+
+# We estimate some of the point asked
+notas_k_2 <- fn_punto_1(df = df_proteinas, k = 2)
+notas_k_3 <- fn_punto_1(df = df_proteinas, k = 3)
+notas_k_4 <- fn_punto_1(df = df_proteinas, k = 4)
+
+
+# We print the summary asked for the point
+notas_k_2$resumen
+notas_k_3$resumen
+notas_k_4$resumen
+```
+
+
+## Iris
+
+
+```{r kmeans_proteinas}
+# We estimate some of the point asked
+notas_k_2 <- fn_punto_1(df = iris[, -5], k = 2)
+notas_k_3 <- fn_punto_1(df = iris[, -5], k = 3)
+notas_k_4 <- fn_punto_1(df = iris[, -5], k = 4)
+
+
+# We print the summary asked for the point
+notas_k_2$resumen
+notas_k_3$resumen
+notas_k_4$resumen
 ```

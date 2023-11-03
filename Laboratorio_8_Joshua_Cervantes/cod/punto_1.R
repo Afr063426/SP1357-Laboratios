@@ -43,12 +43,13 @@ fn_punto_1 <- function(df = iris[,-5], k = 2, nstart = 100, ...){
         y = "Cantidad")
 
     #Se retorna una lista de parametros de relevancia para el laboratior
-    return(list(df = df_kmeans, 
-        plot_optimos = plot_optimos,
-        optimo_promedio = optimo_promedio,
-        mejor_optimo = mejor_optimo, 
-        atraccion_mejor_optimo = atraccion_mejor_optimo, 
-        mejor_km = mejor_km
+    return(list(informacion_general = list(df = df_kmeans,
+            mejor_km = mejor_km), 
+            resumen = list(plot_optimos = plot_optimos,
+            optimo_promedio = optimo_promedio,
+            mejor_optimo = mejor_optimo, 
+            atraccion_mejor_optimo = atraccion_mejor_optimo
+            )
         ))
 
 
