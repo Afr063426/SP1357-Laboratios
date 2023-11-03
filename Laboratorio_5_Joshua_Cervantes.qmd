@@ -1,0 +1,124 @@
+<!-- R Commander Markdown Template -->
+
+Laboratorio 5
+=======================
+
+### Joshua Cervantes Artavia
+
+### `r as.character(Sys.Date())`
+
+```{r echo=FALSE, include = FALSE}
+# include this code chunk as-is to set options
+knitr::opts_chunk$set(comment = NA, prompt = TRUE, out.width = 750, fig.height = 8, fig.width = 8)
+library(Rcmdr)
+library(car)
+library(RcmdrMisc)
+library(FactoMineR)
+library(factoextra)
+```
+
+```{r}
+data(iris, package = "datasets")
+```
+
+# Iris
+
+
+
+```{r}
+iris.PCA <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species")]
+res <- PCA(iris.PCA, scale.unit = TRUE, ncp = 5, quali.sup = c(5:5), graph = FALSE)
+```
+
+
+```{r}
+print(plot.PCA(res, axes = c(1, 2), choix = "ind", habillage = "none", col.ind = "#0d1282", col.ind.sup = "blue", col.quali = "#d71313", label = c("ind", "ind.sup", "quali"), new.plot = TRUE, title = "Plano principal"))
+```
+
+```{r}
+print(plot.PCA(res, axes = c(1, 2), choix = "var", new.plot = TRUE, col.var = "black", col.quanti.sup = "blue", label = c("var", "quanti.sup"), lim.cos2.var = 0, title = "Círculo de correlaciones"))
+```
+
+```{r include = FALSE}
+ggsave("./pca_ind_iris.svg", fviz_pca_ind(res))
+```
+
+![](pca_ind_iris.svg)
+
+```{r include = FALSE}
+ggsave("./pca_iris.svg", fviz_pca_var(res))
+```
+
+![](pca_iris.svg)
+
+
+```{r}
+summary(res, nb.dec = 3, nbelements = 10, nbind = 10, ncp = 3, file = "")
+```
+
+
+# Tabla 4.10
+
+
+```{r}
+profesion_respuesta <- readXL("C:/Users/saac9/OneDrive - Universidad de Costa Rica/Documents/UCR/2023/Topicos_de_analisis_de_datos_1/Laboratorios/Ejercicios-Cap4.xlsx",
+    rownames = TRUE, header = TRUE, na = "", sheet = "3.Profesión-FMI",
+    stringsAsFactors = FALSE
+)
+```
+
+
+
+
+```{r}
+profesion_respuesta.CA <- profesion_respuesta[c(
+    "Agricultures", "Patrón empresa o comercio", "Profes. liberales y científicas", "Empleados", "Profesiones intermedias", "Profesores y maestros", "Estudiantes", "Pensionados",
+    "Amas de casa", "Desempleados, sin profesión"
+), c("X1", "X2", "X3", "X4", "X5")]
+
+res <- CA(profesion_respuesta.CA, ncp = 5, row.sup = NULL, col.sup = NULL, graph = FALSE)
+
+```
+
+```{r}
+print(plot.CA(res, axes = c(1, 2), col.row = "blue", col.col = "red", title = "Plano factorial principal AFC"), label = c("col", "col.sup", "row", "row.sup"))
+```
+
+
+```{r}
+summary(res, nb.dec = 3, nbelements = 10, nbind = 10, ncp = 3, file = "")
+```
+
+En este caso se puede observar como se genera un grupo al rededor de la respuesta 1 que es en total desacuerdo de tal forma que este grupo aporta de mayor forma a la respuesta. Por otro lado se puede observar que las respuestas no tan de acuerdo y en total desacuerdo se cotraponen a todas la demás que se ven más asociadas a respuestas de amas de casa, patrones y empleados, aunque estos dos últimos parecen aportar lo mismo para los dos grupos de respuestas que se contraponen. En este caso se pueden conservar los autovalores que superen el 100/4 = 25 de varianza explicada (inercia), sin embargo, en ese caso conservaríamos únicamente el primer eje, en dado caso podrían tomarse los dos primeros y estos a su vez superan el 75% de inercia acumula que puede ser tomado como un criterio global para escogencia de los autovalores.
+
+# Tabla 4.11
+
+```{r}
+exportaciones_costa_rica <-
+    readXL("C:/Users/saac9/OneDrive - Universidad de Costa Rica/Documents/UCR/2023/Topicos_de_analisis_de_datos_1/Laboratorios/Ejercicios-Cap4.xlsx",
+        rownames = TRUE, header = TRUE, na = "", sheet = "4.Exportaciones", stringsAsFactors = FALSE
+    )
+```
+
+
+
+
+```{r}
+exportaciones_costa_rica.CA <- exportaciones_costa_rica[c(
+    "Plantas ornamentales", "Flores", "Follajes", "Chayotes",
+    "Yuca", "Tubérculos", "Piñas", "Plátanos", "Macadamia", "Fresas", "Melones", "Papayas", "Petunia", "Raivilla",
+    "Otros"
+), c("X1986", "X1987", "X1988", "X1989", "X1990")]
+res <- CA(exportaciones_costa_rica.CA, ncp = 5, row.sup = NULL, col.sup = NULL, graph = FALSE)
+```
+
+```{r}
+print(plot.CA(res, axes = c(1, 2), col.row = "blue", col.col = "red", title = "Plano factorial principal AFC"), label = c("col", "col.sup", "row", "row.sup"))
+```
+
+
+```{r}
+summary(res, nb.dec = 3, nbelements = 10, nbind = 10, ncp = 3, file = "")
+```
+
+En este caso se puede observar que existen dos exportaciones que se encuentran claramente alejadas de las demás así como del resto de años. Se puede observar que los platanos, petunias y chayotes, plantas ornamentales y flores aportaron más a los años 1986 y 1987, además de que estas se encuentran muy cercanas por lo que el comportamiento es similar. Ahora en cuanto a los años 1990 y 1989 estos se contraponen a los años 1986 y 1987 y la mayoría de las exportaciones están asociadas a tubércolos, macadamia y frijoles. En el año 1988 las fresas presentan una mayor presencia en comparación con años anteriores. Es interesante observar como los años donde los productos se encuentran más cercanos están asociados con gran aumento de en los montos de los mismos. En cuanto a calidad se podría decir que se pueden conservar los primeros ejes que que tengan una inercia explicada superior a 100/4 = 25 y que el siguiente eje sea inferior a este valor en este caso podría ser posible conservar los tres primeros ejes, aunque si se hicera por regla global de 75% se puedría conservar únicamente los primeros dos 2 ejes en general la calidad de representación se puede considerar como buena.

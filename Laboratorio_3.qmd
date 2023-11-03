@@ -1,0 +1,234 @@
+---
+title: Laboratorio 3, Tópicos en análisis datos 1
+author: Joshua Isaac Cervantes Artavia
+date: 2023-09-06
+format: 
+    pdf:
+        number-sections: true
+        colorlinks: true
+        fontfamily: libertinus
+
+---
+
+# 
+
+
+Discretización de variables cuantitativas
+
+a- Se forman tres clases
+
+```{r}
+# Se fija la semilla con la que se generan los número aleatorios
+set.seed(654)
+
+X <- rnorm(15) # Vector normal
+
+# Se crean los intervalos abiertos por la izquierda y cerrados por la derecha
+X_intervalos <- c(X, breaks = c(min(X) - 1e-10, -0.2, 0.2, max(X)))
+
+# Se muestran los intervalos
+X_intervalos
+```
+
+b- Se forman clases a partir de cuantiles
+
+```{r}
+# Cuantiles
+corte <- quantile(X, probs = seq(0, 1, by = 0.25))
+
+X_intervalos_2 <- cut(X, breaks = corte, include.lowest = TRUE)
+
+table(X_intervalos_2)
+
+```
+
+Con lowest se toma en el primer intervalo el menor cerrado, de tal forma que es el mínimo.
+
+# 
+```{r}
+# Se crea la tabla de datos
+df_notas_escolares <- (data.frame(
+    Estudiante =
+        c(
+            "Lucía",
+            "Pedro",
+            "Inés",
+            "Luis",
+            "Andrés",
+            "Ana",
+            "Carlos",
+            "José",
+            "Sonia",
+            "María"
+        ),
+    Mate = c(7, 7.5, 7.6, 5.0, 6.0, 7.8, 6.3, 7.9, 6.0, 6.8),
+    Cien = c(6.5, 9.4, 9.2, 6.5, 6, 9.6, 6.4, 9.7, 6, 7.2),
+    Espa = c(9.2, 7.3, 8, 6.5, 7.8, 7.7, 8.2, 7.5, 6.5, 8.7),
+    Hist = c(8.6, 7, 8, 7, 8.9, 8, 9, 8, 5.5, 9),
+    EdFi = c(8, 7, 7.5, 9, 7.3, 6.5, 7.2, 6, 8.7, 7),
+    Peso_lbs = c(126, 140, 130, 150, 142, 128, 144, 134, 135, 128),
+    Estatura_cm = c(162, 168, 169, 172, 165, 165, 170, 165, 170, 166)
+))
+
+df_notas_escolares_solo_notas <- df_notas_escolares[, -c(7, 8)]
+
+```
+
+a-
+Se estima el centro de gravedad
+
+```{r}
+# Centro de gravedad
+(g <- apply(df_notas_escolares_solo_notas[, -1], 2, mean))
+
+```
+
+b- 
+```{r}
+# Funcion para estimar la inercia I(N)
+fn_inercia <- function(df_datos, a, M, pesos = 0) {
+    n <- nrow(df_datos)
+    pesos <- pesos * (pesos != 0) + rep(1 / n, n) * (pesos == 0)
+    # Donde se suma la inercia
+    I_N <- 0
+    for (i in 1:n) {
+        difference <- as.matrix((df_datos[i, ] - a))
+
+        I_N <- I_N + pesos[i] * (difference) %*% M %*% t(difference)
+    }
+    return(I_N)
+}
+
+
+
+# Valores de estudiantes
+a <- df_notas_escolares_solo_notas[df_notas_escolares_solo_notas$Estudiante %in% c(
+    "Lucía",
+    "Andrés",
+    "Sonia"
+), ]
+
+# Metrica
+M <- diag(1, 5)
+
+
+# Lucia
+fn_inercia(df_notas_escolares_solo_notas[, -1], a[1, -1], M = M)
+
+# Andres
+fn_inercia(df_notas_escolares_solo_notas[, -1], a[2, -1], M = M)
+
+# Sonia
+fn_inercia(df_notas_escolares_solo_notas[, -1], a[3, -1], M = M)
+
+
+```
+
+c-
+```{r}
+# Inercia
+fn_inercia(df_notas_escolares_solo_notas[, -1], g, M = M)
+```
+
+d-
+```{r}
+df_notas_escolares_solo_notas_centradas <- df_notas_escolares_solo_notas
+(df_notas_escolares_solo_notas_centradas[, -1] <- df_notas_escolares_solo_notas[, -1]
+    - matrix(rep(g, 10), nrow = 10, byrow = TRUE))
+```
+
+e- 
+```{r}
+# Se centran las variables
+
+
+#Centro de gravedad de las variables centradas
+(g_centradas <- apply(df_notas_escolares_solo_notas_centradas[,-1], 2, mean))
+
+#Se estima la inercia de estas variable centradas
+fn_inercia(df_notas_escolares_solo_notas_centradas[, -1], g_centradas, M = M)
+```
+
+Se puede observar que se sigue manteniendo la misma inercia. Es decir el centras las variables no afecta a la misma.
+
+f- 
+
+Se emplea la métrica como la diagonal de la división de las varianzas
+```{r}
+# Metrica de inversa de varianzas
+D_s <- diag(apply(df_notas_escolares_solo_notas[, -1], 2, function(x) {
+    1 /
+        (var(x) * (length(x) - 1) / (length(x)))
+}))
+
+fn_inercia(df_notas_escolares_solo_notas[, -1], g, M = D_s)
+```
+
+g- 
+
+Se emplea la métrica de Mahalanobis
+
+```{r}
+M_halanobis <- solve((nrow(df_notas_escolares) - 1) /
+    nrow(df_notas_escolares) *
+    cov(df_notas_escolares_solo_notas[, -1]))
+fn_inercia(df_notas_escolares_solo_notas[, -1], g, M = M_halanobis)
+```
+
+# 
+a-
+```{r}
+# Se estandarizan las variables
+df_notas_escolares_solo_notas_centradas_est <- df_notas_escolares_solo_notas_centradas
+(df_notas_escolares_solo_notas_centradas_est[, -1] <-
+    df_notas_escolares_solo_notas_centradas_est[, -1] / (
+        (sqrt((nrow(df_notas_escolares_solo_notas_centradas_est) - 1) /
+            nrow(df_notas_escolares_solo_notas_centradas_est))) * matrix(rep(
+            apply(df_notas_escolares_solo_notas[, -1], 2, sd),
+            10
+        ), nrow = 10, byrow = TRUE)))
+
+```
+
+b-
+
+Se calcula la inercia con la métrica identidad
+```{r}
+g_cent_std <- apply(df_notas_escolares_solo_notas_centradas_est[, -1], 2, mean)
+
+fn_inercia(df_notas_escolares_solo_notas_centradas_est[, -1], g_cent_std, M = M)
+```
+
+Se puede observar que el resultado es el mismo que con Mahalanobis y la métrica invera de las varianzas.
+
+c-
+```{r}
+correlaciones_materias <- cor(df_notas_escolares_solo_notas_centradas_est[, -1])
+
+materias <- colnames(df_notas_escolares_solo_notas_centradas_est[, -1])
+materia_mas_corr <- materias[1]
+
+for (i in materias[-1]) {
+    if (sum(abs(correlaciones_materias[, i]) >
+        abs(correlaciones_materias[, materia_mas_corr])) >= 3) {
+        materia_mas_corr <- i
+    }
+}
+
+materia_mas_corr
+```
+
+La variable que está más correlacionada con todas las demás es matemática.
+
+# 
+
+```{r}
+ponderacion <- c(4, 4, 3, 3, 1)
+
+M_ponderacion <- diag(ponderacion / sum(ponderacion))
+
+
+(inercia_ponderacion <- fn_inercia(df_notas_escolares_solo_notas_centradas_est[, -1], g_cent_std, M_ponderacion))
+```
+
+Se obtiene que la inercia es de `r inercia_ponderacion`.

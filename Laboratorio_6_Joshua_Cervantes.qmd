@@ -1,0 +1,453 @@
+---
+title: Laboratorio 6, Tópicos en análisis datos 1
+author: Joshua Isaac Cervantes Artavia
+date: today
+format: 
+    pdf:
+        tbl-pos: 'H'
+        fig-pos: 'H'
+        number-sections: true
+        colorlinks: true
+        fontfamily: libertinus
+
+---
+
+```{r}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+library(tidyverse) # To manipulate data, and other things
+library(ggforce) # To use ggcircle
+library(openxlsx) # To manipulate Excel
+library(kableExtra) # To make beatiful tables
+library(ade4)
+
+
+
+tryCatch(
+    {
+        # Directorio donde se ubica el qmd
+        directory <- dirname(rstudioapi::getSourceEditorContext()$path)
+        setwd(directory) # Establecer el directorio del archivo como la raiz
+    },
+    error = function(e) {
+        message("")
+        print("")
+    }
+)
+```
+
+
+# Análisis de componentes principales
+```{r acp_arrests}
+data(USArrests)
+
+# We make the pca
+acp_res <- dudi.pca(USArrests, scannf = FALSE, nf = 3)
+
+
+# We check that type of the object acp_res
+is.dudi(acp_res)
+
+
+# We check the rank of the matrix
+acp_res$rank
+
+
+# We check the number of factors
+acp_res$nf
+
+# We check the eigen values
+acp_res$eig
+
+# We do a bar plot
+barplot(acp_res$eig)
+
+# We check the table centered, and also standarized
+acp_res$tab
+
+# We check the weights of the columns
+acp_res$cw
+
+# We get the weight of the rows
+acp_res$lw
+
+# We get the coordinates of the rows
+acp_res$li
+
+# We get the coordinates standarized of the rows
+acp_res$l1
+
+# We get the coordinates of the columns
+acp_res$co
+
+# We get the coordinates standarized of the columns
+acp_res$c1
+
+# We get a plot of the relation between the coordinates of the pca 1 vs variables
+score(acp_res)
+
+
+# Correlations circle
+s.corcircle(acp_res$co)
+
+# Principal plane
+s.label(acp_res$li)
+
+# Simmultanious correlation variables, and principal plane and value of eigen values
+scatter(acp_res)
+```
+
+
+# Análisis de Correspondencias Simples
+```{r housetasks load data}
+# We load the data
+data(housetasks)
+
+
+```
+
+
+```{r chis test housetasks}
+# We make a chi square test
+chisq.test(housetasks)
+
+
+```
+
+Se recha la hipótesis nula de que no existe relación entre las variables.
+
+```{r row profiles}
+# We estimate the row profiles
+round(housetasks / apply(housetasks, 1, sum), 2)
+
+# We estimate the column profiles
+round(t(housetasks) / apply(t(housetasks), 1, sum), 2)
+
+# We estimate the weight of the rows
+round(apply(housetasks, 1, sum) / sum(housetasks), 2)
+
+# We estima the weight of the columns
+round(apply(housetasks, 2, sum) / sum(housetasks), 2)
+```
+
+
+```{r afc}
+# We make a afc
+z <- dudi.coa(df = housetasks, scannf = F, nf = 3)
+
+# We get the eigen values
+round(z$eig, 2)
+
+
+# Inertia explained by each eigen value
+round(z$eig / sum(z$eig) * 100, 2)
+```
+
+
+```{r plot eige values}
+# We make the plot of the eigen values to check the inertia, and the inflection point
+inercia <- z$eig / sum(z$eig) * 100
+
+
+# Bar plot
+ggplot(, aes(x = c("1", "2", "3"), y = inercia)) +
+    geom_bar(stat = "identity") +
+    labs(x = "Autovalor", y = "% de inercia") +
+    theme_minimal() +
+    ggtitle("Valor propios en %")
+```
+
+
+```{r factorial plane coa}
+# Factorial plane
+scatter(z, method = 1, sub = "Tareas en el Hogar", posieig = "none")
+
+
+# Second way to make factorial plane
+plot(z$li[, 1], z$li[, 2], type = "n", xlab = "Axe 1", ylab = "Axe 2", xlim = c(-1.2, 1.6))
+text(z$li[, 1], z$li[, 2], label = row.names(housetasks))
+text(z$co[, 1], z$co[, 2], label = colnames(housetasks), col = "red")
+title("Distribuci´on de Tareas en el Hogar")
+abline(h = 0, v = 0)
+
+```
+
+
+```{r coordinates of profiles}
+# Coordinates of rows profiles
+round(z$li, 2)
+
+
+# Coordinates of columns profiles
+round(z$co, 2)
+
+```
+
+
+```{r}
+# We estimate the contribution of the columns to the inertia
+inertia.dudi(z, col.inertia = T)$col.abs
+
+
+# We estimate the contribution of the rows to the inertia
+inertia.dudi(z, row.inertia = T)$row.abs
+
+```
+
+k)
+
+## Ejercicio 3 capítulo 4
+```{r exercise_4_3}
+# We read the data
+profesiones <- read.xlsx("Ejercicios-Cap4.xlsx", 1)
+
+
+# We make the afc
+
+rownames(profesiones) <- profesiones[, 1]
+profesiones <- profesiones[, -1]
+
+
+profesiones_coa <- dudi.coa(df = profesiones, scannf = F, nf = 4)
+
+scatter(profesiones_coa)
+```
+
+Se puede observar que las amas de casa claramente se oponene a los profesores y maestros, así como los profes. liberalres y científicas teniéndose que los maestros aportan en su gran mayoría a la respuesta de que está en total desacuerdo de con el "FMI ayude a resolver la crisis". Los otros que se oponen a estos últimos respecto al segundo eje y estos aportan en su gran mayoría con estar no tan de acuerdo. Además, en su gran mayoría las amas de casa aportan a la respuesta de podría estar de acuerdo. Las profesiones intermedias, empleados, patrón empresa o comercio, y agricultores no se ven tan bien representados en este plano.
+
+```{r}
+# Factorial plane 3-4
+ggplot(, ) +
+    geom_label(aes(x = profesiones_coa$li[, 3], y = profesiones_coa$li[, 4], label = rownames(profesiones))) +
+    geom_label(aes(x = profesiones_coa$co[, 3], y = profesiones_coa$co[, 4], label = colnames(profesiones))) +
+    geom_vline(xintercept = 0) +
+    geom_hline(yintercept = 0) +
+    theme_minimal() +
+    labs(x = "Eje 3", y = "Eje 4") +
+    ggtitle("Plano factorial 3-4")
+```
+
+Se puede observar como los agricultores y los patrones de empresa o comercio se encuentran del mismo lado en el plano factorial 3-4. Vamos a graficar los perfiles fila mediante un barplot para ver si esto es cierto
+```{r barplot patron empresa y agricultores}
+# We estimate the row profiles
+row_profiles_profesiones <- profesiones / apply(profesiones, 1, sum)
+row_profiles_profesiones$profesion <- rownames(row_profiles_profesiones)
+row_profiles_profesiones <- row_profiles_profesiones %>% gather(key = "Respuesta", value = "Valor", 1:5)
+
+row_profiles_profesiones %>%
+    filter(profesion %in% c("Agricultures ", "Patrón empresa o comercio ")) %>%
+    ggplot(aes(x = Respuesta, y = Valor, fill = profesion)) +
+    geom_bar(stat = "identity") +
+    facet_wrap(. ~ profesion) +
+    theme_minimal() +
+    labs(fill = "Profesión", x = "Respuesta", y = "Valor")
+```
+
+Se puede observar que de cierta forma sí tienen un comportamiento similar tanto los agricultores omo los patrones de empresas o comercios. Tal y como lo proponía el plano factorial 3-4.
+
+## Ejercicio 4 capítulo 4
+
+```{r}
+exportaciones <- read.xlsx("Ejercicios-Cap4.xlsx", 2)
+rownames(exportaciones) <- exportaciones[, 1]
+exportaciones <- exportaciones[, -1]
+```
+
+Se encuentra que sobre esta tabla de datos se puede realizar un AFC ya que a pesar de que fue ideado para describir la relación de dos variables cualitativas a través de tablas de contingencias el único requisito necesario es que las entradas de la tabla no sean negativas y que la suma de columnas y filas no se anule. 
+```{r}
+exportaciones_coa <- dudi.coa(df = exportaciones, scannf = F, nf = 4)
+scatter(exportaciones_coa, posieig = "none")
+```
+
+```{r}
+exportaciones_pca <- dudi.pca(df = exportaciones, scannf = F, nf = 4)
+scatter(exportaciones_pca, posieig = "none")
+```
+
+En este caso se puede encontrar un comportamiento similar para los años, más no exactamente igual en términos de correlación. Ahora en cuanto a los productos se encuentra que en el ACP la mayoría de los cultivos se encuentran cercanos, situación que no sucede en el AFC que presentan un comportamiento de mayor dispersión.
+
+# Análisis de correspondencias múltiples
+
+```{r acm ours}
+# We load the data
+data(ours)
+
+# We show the table
+ours
+
+# We show a summary of the data
+summary(ours)
+
+# We make a dispersion plot, boxplot
+boxplot(dudi.acm(ours, scan = FALSE))
+
+
+# We make the disjuntive code
+our_disyuntivo <- acm.disjonctif(ours)
+
+# We make a burt table
+acm.burt(ours, ours)
+
+
+# ACM results
+ours_acm <- dudi.acm(ours, scann = FALSE, nf = 3)
+
+# We check the eigen values
+apply(ours_acm$cr, 2, mean)
+
+ours_acm$eig[1:ours_acm$nf]
+
+# Plot of eigen values
+inercia <- ours_acm$eig / sum(ours_acm$eig) * 100
+barplot(inercia, ylab = "% de inercia", names.arg = round(inercia, 2))
+title("Valor propios en %")
+
+
+# Factorial plane representation
+plot(ours_acm$li[, 1], ours_acm$li[, 2], type = "n", xlab = "Axe 1", ylab = "Axe 2", xlim = c(-1.2, 1.6))
+text(ours_acm$li[, 1], ours_acm$li[, 2], label = row.names(ours))
+text(ours_acm$co[, 1], ours_acm$co[, 2], label = colnames(our_disyuntivo), col = "red")
+title("Distribución de 38 Osos")
+abline(h = 0, v = 0)
+
+# Main plane with intensities
+s.value(ours_acm$li, ours_acm$li[, 3])
+```
+
+```{r comparacion acm Burt y disyuntiva}
+bb <- acm.burt(ours, ours)
+bbcoa <- dudi.coa(bb, scann = FALSE)
+plot(ours_acm$c1[, 1], bbcoa$c1[, 1])
+bd <- acm.disjonctif(ours)
+bdcoa <- dudi.coa(bd, scann = FALSE)
+plot(ours_acm$li[, 1], bdcoa$li[, 1])
+plot(ours_acm$co[, 1], dudi.coa(bd, scann = FALSE)$co[, 1])
+```
+
+m) 
+
+## Ejercicio 6 del capítulo 5
+
+```{r ejercico 6 cap 5}
+df_ejercicio_6_cap_5 <- read.xlsx("./Ejercicios-Cap5.xlsx", 1)
+
+perros <- df_ejercicio_6_cap_5 %>%
+    select(-Raza) %>%
+    mutate(across(where(is.numeric), as.factor))
+
+perros_acm <- dudi.acm(df = perros[, -7], scann = FALSE, nf = 5)
+```
+
+
+Se procede a ver los autovalores el grado de incercia explicada por cada uno
+```{r inercia perros}
+# We make a plot of the inertia
+(inercia <- perros_acm$eig / sum(perros_acm$eig) * 100)
+cumsum(inercia)
+barplot(inercia, ylab = "% de inercia", names.arg = round(inercia, 2))
+title("Valor propios en %")
+
+```
+
+Si se pone como regla general que se tenga una inercia mayor a 75% entonces se pueden conservar los primeros 5 ejes. Además, se tiene que los que superan 100/12 = `r 100/12` en inercia, entonces se conservaría igualmente hasta el quinto.
+
+Graficando se obtiene
+```{r}
+perros_disyuntivo <- acm.disjonctif(perros[, -7])
+rownames(perros) <- df_ejercicio_6_cap_5$Raza
+# Factorial plane representation
+plot(perros_acm$li[, 1], perros_acm$li[, 2], type = "n", xlab = "Axe 1", ylab = "Axe 2", xlim = c(-1.2, 1.6))
+text(jitter(perros_acm$li[, 1], amount = 0.1), jitter(perros_acm$li[, 2], amount = 0.1), label = row.names(perros))
+# text((perros_acm$li[, 1]), (perros_acm$li[, 2]), label = row.names(perros))
+text((perros_acm$co[, 1]), (perros_acm$co[, 2]), label = colnames(perros_disyuntivo), col = "red")
+title("Distribución de 27 razas de perros")
+abline(h = 0, v = 0)
+
+```
+
+En este caso se agregó un poco de ruido ya que algunas razas se encontraban justamente por encima de las otras. Se puede observar que los chihuha y pekinés son colocados de forma cercana de tal forma que estos se encuentran principalmente caracterizados por ser livianos, lkentos y pequeños a ellos se contraponen los perros más grandes como es el Rottweiler por ejemplo que tiene talla velocidad y talla mayor. Se puede observar que muy pocos son los perros que son caracterizados principalmente por agresividad 1, inteligencia 2 y afecto 3. 
+
+Ahora si se grafica la variable suplementaria función se tiene lo siguiente
+
+```{r perros factorial 1-2 suplementaria}
+funcion_suplementaria <- acm.disjonctif(perros %>% select(Func))
+coord_funcion <- supcol(x = perros_acm, Xsup = funcion_suplementaria)
+
+
+plot(perros_acm$li[, 1], perros_acm$li[, 2], type = "n", xlab = "Axe 1", ylab = "Axe 2", xlim = c(-1.2, 1.6))
+text(jitter(perros_acm$li[, 1], amount = 0.1), jitter(perros_acm$li[, 2], amount = 0.1), label = row.names(perros))
+# text((perros_acm$li[, 1]), (perros_acm$li[, 2]), label = row.names(perros))
+text((perros_acm$co[, 1]), (perros_acm$co[, 2]), label = colnames(perros_disyuntivo), col = "red")
+text((coord_funcion$cosup[, 1]), (coord_funcion$cosup[, 1]), label = colnames(funcion_suplementaria), col = "blue")
+title("Distribución de 27 razas de perros, primer plano factorial")
+abline(h = 0, v = 0)
+
+```
+
+Se puede observar en este caso que compañía y utilidad se contraponen, sin embargo, se puede observar que caza no se ve tan bien reflejada en este plano. Además, se puede obsevar que los que más aportan a utilidad son los terranova, dogo alemán y San Bernardo. Mientras que en el caso de compañía en el mismo cuadrante se encuentran algunos muy alejados. Ahora si se grafica el tercer eje con el cuarto eje se obtiene lo siguiente
+
+```{r perros factorial 3-4 suplementaria}
+
+plot(perros_acm$li[, 3], perros_acm$li[, 4], type = "n", xlab = "Axe 1", ylab = "Axe 2", xlim = c(-1.2, 1.6))
+text(jitter(perros_acm$li[, 3], amount = 0.1), jitter(perros_acm$li[, 4], amount = 0.1), label = row.names(perros))
+# text((perros_acm$li[, 1]), (perros_acm$li[, 2]), label = row.names(perros))
+text((perros_acm$co[, 3]), (perros_acm$co[, 4]), label = colnames(perros_disyuntivo), col = "red")
+text((coord_funcion$cosup[, 3]), (coord_funcion$cosup[, 4]), label = colnames(funcion_suplementaria), col = "blue")
+title("Distribución de 27 razas de perros, plano factorial 2-3")
+abline(h = 0, v = 0)
+```
+
+En este caso se puede ver más claramente la función de utilidad, que se puede observar caza se contrapone a utilidad teniendo que caza se ve mayoritariamente representado por el cuarto eje. Además, se encuentra que el que más le aporta en este caso a la posición son los Setter, perros los cuales realmente tienen como utilidad caza, lo cual termina siendo interesante ya que esta variable no fue incluida inicialmente en el ajuste del ACM.
+
+n) 
+```{r}
+# We read the data
+library(readxl)
+df_itcr <- read_excel("./ComedorITCR-datos.xls")[, -1]
+
+
+
+# Disjonctif code of itcr table first 9 columns
+itcr_disyuntivo <- acm.disjonctif(as.data.frame(df_itcr %>% select(1:9)))
+
+
+itcr_acm <- dudi.acm(df = as.data.frame(df_itcr %>% select(c(1:9))) %>% mutate(across(where(is.numeric), as.factor)), scann = FALSE, nf = 5)
+
+
+# We are going to get the supplementart vary variable of disjointif code for qualitative
+# variables
+colnames(df_itcr)
+disyuntivo_suplementarias <- acm.disjonctif(as.data.frame(df_itcr %>% select(Razón, Sexo, Ocupación)))
+coord_suplementarias <- supcol(x = itcr_acm, Xsup = disyuntivo_suplementarias)
+
+edad_sup <- data.frame((df_itcr$Edad - mean(df_itcr$Edad)) / sd(df_itcr$Edad))
+v_h <- supcol(x = itcr_acm, Xsup = edad_sup)
+
+
+coord_vh_continua <- v_h$cosup # / nrow(itcr_disyuntivo)
+
+# We plot the variables, and the supplementary variables
+plot(itcr_acm$li[, 1], itcr_acm$li[, 2], type = "n", xlab = "Axe 1", ylab = "Axe 2")
+text(itcr_acm$li[, 1], itcr_acm$li[, 2], label = row.names(df_itcr))
+text(itcr_acm$co[, 1], itcr_acm$co[, 2], label = colnames(itcr_disyuntivo), col = "red")
+text(coord_suplementarias$cosup[, 1], coord_suplementarias$cosup[, 2], label = colnames(disyuntivo_suplementarias), col = "blue")
+text(coord_vh_continua[1], coord_vh_continua[2], label = "Edad", col = "green")
+title("Distribución ITCR plano factorial 1-2")
+abline(h = 0, v = 0)
+```
+
+Se puede observar que en este la variable de edad no se ve la mejor forma representada. Se contraponen servicio 1 a rapidez 3, servicio 2 y tamaño 2. Además, se observar que los individuos se muestran realmente distribuidos a los largo de todos los ejes. Las variables suplementarias no se ven representadas de las mejor forma en este plano y sucede lo mismo que con edad.
+
+
+```{r}
+# We plot the variables, and the supplementary variables in factorial plane 3-4
+plot(itcr_acm$li[, 3], itcr_acm$li[, 4], type = "n", xlab = "Axe 1", ylab = "Axe 2")
+text(itcr_acm$li[, 3], itcr_acm$li[, 4], label = row.names(df_itcr))
+text(itcr_acm$co[, 3], itcr_acm$co[, 4], label = colnames(itcr_disyuntivo), col = "red")
+text(coord_suplementarias$cosup[, 3], coord_suplementarias$cosup[, 4], label = colnames(disyuntivo_suplementarias), col = "blue")
+text(coord_vh_continua[3], coord_vh_continua[4], label = "Edad", col = "green")
+title("Distribución ITCR plano factorial 3-4")
+abline(h = 0, v = 0)
+
+```
+
+En este segundo plano se encuentra que en el plano factorial 3-4 se ven mejo representadas las variables suplementarias. 

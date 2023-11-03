@@ -1,0 +1,40 @@
+---
+title: Laboratorio 8, Tópicos en análisis datos 1
+author: Joshua Isaac Cervantes Artavia
+date: today
+format: 
+    pdf:
+        tbl-pos: 'H'
+        fig-pos: 'H'
+        number-sections: true
+        colorlinks: true
+        fontfamily: libertinus
+
+---
+
+```{r}
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+
+
+
+tryCatch(
+    {
+        # Directorio donde se ubica el qmd
+        directory <- dirname(rstudioapi::getSourceEditorContext()$path)
+        setwd(directory) # Establecer el directorio del archivo como la raiz
+    },
+    error = function(e) {
+        message("")
+        print("")
+    }
+)
+
+```
+
+
+# Aplicaciones del método de k-means
+```{r}
+source("./cod/punto_1.R")
+
+```

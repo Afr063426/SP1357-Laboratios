@@ -1,0 +1,106 @@
+<!-- R Commander Markdown Template -->
+
+Laboratorio 5
+=======================
+
+### Joshua Cervantes Artavia
+
+### `r as.character(Sys.Date())`
+
+```{r echo=FALSE, include = FALSE}
+# include this code chunk as-is to set options
+knitr::opts_chunk$set(comment = NA, prompt = TRUE, out.width = 750, fig.height = 8, fig.width = 8)
+library(Rcmdr)
+library(car)
+library(RcmdrMisc)
+library(FactoMineR)
+```
+
+```{r}
+data(iris, package = "datasets")
+```
+
+# Iris
+
+
+
+```{r}
+iris.PCA <- iris[, c("Sepal.Length", "Sepal.Width", "Petal.Length", "Petal.Width", "Species")]
+res <- PCA(iris.PCA, scale.unit = TRUE, ncp = 5, quali.sup = c(5:5), graph = FALSE)
+```
+
+
+```{r}
+print(plot.PCA(res, axes = c(1, 2), choix = "ind", habillage = "none", col.ind = "#0d1282", col.ind.sup = "blue", col.quali = "#d71313", label = c("ind", "ind.sup", "quali"), new.plot = TRUE, title = "Plano principal"))
+```
+
+```{r}
+print(plot.PCA(res, axes = c(1, 2), choix = "var", new.plot = TRUE, col.var = "black", col.quanti.sup = "blue", label = c("var", "quanti.sup"), lim.cos2.var = 0, title = "Círculo de correlaciones"))
+```
+
+```{r}
+summary(res, nb.dec = 3, nbelements = 10, nbind = 10, ncp = 3, file = "")
+```
+
+
+# Tabla 4.10
+
+
+```{r}
+profesion_respuesta <- readXL("C:/Users/saac9/OneDrive - Universidad de Costa Rica/Documents/UCR/2023/Topicos_de_analisis_de_datos_1/Laboratorios/Ejercicios-Cap4.xlsx",
+    rownames = TRUE, header = TRUE, na = "", sheet = "3.Profesión-FMI",
+    stringsAsFactors = FALSE
+)
+```
+
+
+
+
+```{r}
+profesion_respuesta.CA <- profesion_respuesta[c(
+    "Agricultures", "Patrón empresa o comercio", "Profes. liberales y científicas", "Empleados", "Profesiones intermedias", "Profesores y maestros", "Estudiantes", "Pensionados",
+    "Amas de casa", "Desempleados, sin profesión"
+), c("X1", "X2", "X3", "X4", "X5")]
+
+res <- CA(profesion_respuesta.CA, ncp = 5, row.sup = NULL, col.sup = NULL, graph = FALSE)
+
+```
+
+```{r}
+print(plot.CA(res, axes = c(1, 2), col.row = "blue", col.col = "red", title = "Plano factorial principal AFC"), label = c("col", "col.sup", "row", "row.sup"))
+```
+
+
+```{r}
+summary(res, nb.dec = 3, nbelements = 10, nbind = 10, ncp = 3, file = "")
+```
+
+# Tabla 4.11
+
+```{r}
+exportaciones_costa_rica <-
+    readXL("C:/Users/saac9/OneDrive - Universidad de Costa Rica/Documents/UCR/2023/Topicos_de_analisis_de_datos_1/Laboratorios/Ejercicios-Cap4.xlsx",
+        rownames = TRUE, header = TRUE, na = "", sheet = "4.Exportaciones", stringsAsFactors = FALSE
+    )
+```
+
+
+
+
+```{r}
+exportaciones_costa_rica.CA <- exportaciones_costa_rica[c(
+    "Plantas ornamentales", "Flores", "Follajes", "Chayotes",
+    "Yuca", "Tubérculos", "Piñas", "Plátanos", "Macadamia", "Fresas", "Melones", "Papayas", "Petunia", "Raivilla",
+    "Otros"
+), c("X1986", "X1987", "X1988", "X1989", "X1990")]
+res <- CA(exportaciones_costa_rica.CA, ncp = 5, row.sup = NULL, col.sup = NULL, graph = FALSE)
+```
+
+```{r}
+print(plot.CA(res, axes = c(1, 2), col.row = "blue", col.col = "red", title = "Plano factorial principal AFC"), label = c("col", "col.sup", "row", "row.sup"))
+```
+
+
+```{r}
+summary(res, nb.dec = 3, nbelements = 10, nbind = 10, ncp = 3, file = "")
+```

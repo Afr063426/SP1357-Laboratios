@@ -1,0 +1,403 @@
+---
+title: Laboratorio 2, Tópicos en análisis datos 1
+author: Joshua Isaac Cervantes Artavia
+date: 2023-09-02
+format: 
+    pdf:
+        toc: true
+        number-sections: true
+        colorlinks: true
+        fontfamily: libertinus
+
+---
+
+
+```{r}
+tryCatch(
+#To set the default folder, it is going to be the folder where is the script
+{
+    directory <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(directory)
+},
+error = function(e){
+
+}
+)
+```
+
+# 1
+```{r}
+# Se el dataset
+df_europa <- read.table("europa.csv", dec = ".", sep = ";", header = TRUE)
+```
+
+
+Se verifican los datos:
+
+```{r}
+names(df_europa)
+head(df_europa)
+str(df_europa)
+summary(df_europa)
+range(df_europa$Duracion.horas.)
+sd(df_europa$Duracion.horas.)
+```
+
+Se realizan algunos gráficos
+```{r}
+plot(df_europa$Duracion.horas.)
+boxplot(df_europa$Duracion.horas., ylab = "Duración (horas)")
+points(1, mean(df_europa$Duracion.horas.), pch = 2)
+```
+
+# 2
+
+a-
+```{r}
+library(MASS)
+data(iris)
+iris_numeric <- iris[, sapply(iris, is.numeric)]
+dim(iris)
+```
+
+Se puede observar que tiene 150 filas y 5 columnas.
+
+Los nombres de las variables son
+```{r}
+colnames(iris)
+```
+
+La muestra son 50 observaciones.
+
+b-
+
+### Media
+```{r}
+apply(iris_numeric, 2, mean)
+
+```
+
+### Mediana
+```{r}
+apply(iris_numeric, 2, median)
+```
+
+
+### Desviación estándar
+```{r}
+apply(iris_numeric, 2, sd)
+```
+
+
+### Cuartiles
+```{r}
+apply(iris_numeric, 2, quantile, probs = c(0.25, 0.75))
+```
+
+
+### Máximo
+```{r}
+apply(iris_numeric, 2, max)
+```
+
+
+### Mínimo
+```{r}
+apply(iris_numeric, 2, min)
+```
+
+
+### Rango
+```{r}
+apply(iris_numeric, 2, function(x) max(x) - min(x))
+```
+
+
+c-
+```{r}
+boxplot(Sepal.Length ~ Species, data = iris)
+
+```
+
+d-
+```{r}
+# Se estima un kernel dos dimensional para los datos
+densidad <- kde2d(iris$Petal.Length, iris$Petal.Width)
+filled.contour(densidad, color = topo.colors, xlab = "Longitud del pétalo", ylab = "Ancho del pétalo")
+```
+
+# 3
+
+a-
+
+Creación de matrices
+```{r}
+m1 <- matrix(1, nr = 2, nc = 2)
+m2 <- matrix(2, nr = 2, nc = 2)
+
+# Se coloca una matriz debajo de la otra (concatenacion por fila)
+m <- rbind(m1, m2)
+m
+
+# Concatenacion por columna
+cbind(m1, m2)
+```
+
+b-
+
+Muestreo con repetición
+
+```{r}
+a <- sample(1:10, 30, rep = TRUE)
+a <- matrix(a, nr = 6)
+
+# Hacen 0 los numeros menores de 3
+a[a < 3] <- 0
+
+# Se extrae la diagonal
+diag(a)
+
+# Se crea la matriz diagonal 5x5
+diag(5)
+```
+
+c-
+
+```{r}
+# Se suman los elementos de la matriz m1
+sum(m1)
+
+# Se suma por columna
+apply(m, 2, sum)
+
+# Se suma por filas
+apply(m, 1, sum)
+
+```
+
+d-
+
+Operación de matrices
+
+```{r}
+# Suma
+
+m1 + m2
+
+# Resta
+
+m1 - m2
+
+# Producto
+
+m1 %*% m2
+
+# Producto ii
+
+m1 * m2
+```
+
+Transposición de la matriz
+```{r}
+a
+t(a)
+```
+
+e-
+
+Se construye la matriz solicitada
+```{r}
+z <- matrix(1:12, nc = 4, byrow = TRUE)
+```
+
+```{r}
+# Elemento 1,3
+z[1, 3]
+
+# Primera fila
+z[1, ]
+
+# Tercera columna
+z[, 3]
+
+# Se selecciona la submatriz de eliminar la primera fila y la primera columna
+(z_submatriz <- z[-1, -1])
+
+# Transpuesta de z
+t(z)
+
+
+# Subamtriz al quitar la segunda columna de z, calcular la inversa
+
+(z_sub_matriz_sin_segunda_col <- z[, -2])
+
+tryCatch(
+    {
+        (z_sub_matriz_sin_segunda_col_inv <- solve(z_sub_matriz_sin_segunda_col))
+    },
+    error = function(e) {
+        message("La matriz no es invertible el determinate es")
+        print(det(z_sub_matriz_sin_segunda_col))
+    }
+)
+
+```
+
+# 4
+
+```{r}
+if (!("Lock5Data" %in% installed.packages())) {
+    install.packages("Lock5Data")
+}
+library(Lock5Data)
+
+# Se cargan los datos del dataset AllCountries
+
+data(AllCountries)
+
+fn_sample_mean <- function(sample_size, df, variable, ...) {
+    # Se escoge una muestra de acuerdo al tamano indicado
+    sm <- sample(1:nrow(df), sample_size, ...)
+
+    # Se toman las filas y la variable deseada
+    sm <- df[sm, variable]
+
+    # Se imprime un mensaje de que se tenga un NA
+    if (sum(is.na(sm)) > 0) print("El vector ejemplo contenia NA, se han eliminado para estimar el promedio")
+
+    # Se muestra el promedio de la muestra
+    mean(sm, na.rm = TRUE)
+}
+
+fn_sample_mean(10, AllCountries, "LandArea", rep = FALSE)
+```
+
+
+```{r}
+# Se hace un bloxplot de la variable de poblacion
+boxplot(AllCountries$Population)
+
+```
+
+```{r}
+# Se hace un grafico de dispersion de superficie vs poblacion
+plot(AllCountries$LandArea, AllCountries$Population)
+
+```
+
+# 5
+```{r}
+df_ejercicio_1_6 <- data.frame(sexo = c("masculino", "masculino", rep("femenino", 4), "masculino", "masculino", "femenino"), profesion = c("oficinista", "obrero", "obrero", "artista", "artista", "oficinista", "artista", "oficinista", "artista"))
+
+fn_add_column_0_1 <- function(variable) {
+    # We check the name of the variable
+    name_variable <- colnames(variable)
+
+    # Unique values
+    values <- unique(variable)
+
+    df_aux <- data.frame(rep(0, length(variable)))
+
+    colnames(df_aux) <- values[1]
+
+    for (i in values) {
+        df_aux[[i]] <- ifelse(variable == i, 1, 0)
+    }
+    return(df_aux)
+}
+
+fn_add_column_0_1(c("masculino", "masculino", rep("femenino", 4), "masculino", "masculino", "femenino"))
+(list_disjunctive_tables <- apply(df_ejercicio_1_6, 2, fn_add_column_0_1))
+```
+
+
+# 6
+
+```{r}
+data(HairEyeColor)
+
+ji_squared <- function(contingency_table) {
+    # We sum all to get xdd
+    x_dot_dot <- sum(contingency_table)
+
+    x_j_k_squared <- contingency_table * contingency_table
+
+
+    q <- apply(contingency_table, 2, sum)
+    p <- apply(contingency_table, 1, sum)
+
+    x_j_dot_X_x_dot_k <- sapply(q, FUN = function(x) x * p)
+
+
+    elements_sum <- x_j_k_squared <- x_j_k_squared / x_j_dot_X_x_dot_k
+
+    return(x_dot_dot * sum(elements_sum) - x_dot_dot)
+}
+
+ji_squared(HairEyeColor[, , 1] + HairEyeColor[, , 2])
+```
+
+
+```{r}
+T_squared <- function(contingency_table) {
+    # Se estima la suma de toda la tabla
+    x_dot_dot <- sum(contingency_table)
+
+    # Se estima el numero de filas que coincide con el numero de modalidades de una de la variables
+    rows <- nrow(contingency_table)
+
+    # Se estima el numero de columnas que coincide con el numero de modalidades de una de la variables
+    cols <- ncol(contingency_table)
+
+    # Se retorna el T cuadrado
+    return(ji_squared(contingency_table) / (x_dot_dot * (rows - 1) * (cols - 1)))
+}
+
+# Se estima el T cuadrado de Chuprov sin diferenciar sexo
+T_squared(HairEyeColor[, , 1] + HairEyeColor[, , 2])
+```
+
+# 7
+```{r}
+# Funcion para estimar el coeficiente de correlacion
+# Recibe la tabla, la variable es el nombre de la variable de la que se quiere estimar el coeficiente
+# modalities son las clases
+eta <- function(df, variable, modalities) {
+    # Se ve cuales modalidades hay
+    different_modalities <- unique(df[, modalities])
+
+    # Se selecciona el vector de modalidades
+    modalities <- df[, modalities]
+
+    # Se seleccionan los valores de la variable
+    values <- df[, variable]
+
+    # Suma de la media
+    sum_means <- 0
+
+
+    # Se estima la sumatoria de la media de las modalidades por su peso
+    for (i in different_modalities) {
+        # Promedio de la modalidad j
+        mean_x_j <- mean(values[modalities == i])
+
+        # Peso del promedio
+        eta_j <- sum(modalities == i) / nrow(df)
+
+        # Se agrega a la sumatoria
+        sum_means <- sum_means + eta_j * mean_x_j^2
+    }
+
+    # Se estima coeficiente
+    return((sum_means - mean(values)^2) / ((length(values) - 1) * var(values) / length(values)))
+}
+
+# Se estima el coeficiente para cada variable cuantitativa
+sapply(colnames(iris)[-ncol(iris)], FUN = eta, df = iris, modalities = "Species")
+
+```
+
+
+
+
+
