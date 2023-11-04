@@ -1,6 +1,6 @@
 #Se programa una funcion que permita obtener todo lo solicitado en el punto 1
-
 require(tidyverse)
+require(tictoc)
 
 #Se programa una funcion para estimar lo soliticitado en el punto 1
 fn_punto_1 <- function(df = iris[,-5], k = 2, nstart = 100, ...){
@@ -14,11 +14,13 @@ fn_punto_1 <- function(df = iris[,-5], k = 2, nstart = 100, ...){
     for(i in 1:nstart){
 
     #Se ejecuta el algoritmo
+    start.time <- Sys.time()
     km <- kmeans(df, centers = k, nstart = 1,...)
-
+    end.time <- Sys.time()
+    time.taken <- end.time - start.time
     df_aux <- data.frame(k = k, 
         tot.withinss = km$tot.withinss, 
-        tiempo = NA)
+        tiempo = time.taken)
     df_kmeans <- rbind(df_kmeans, df_aux)
         if(i==1){ 
             mejor_optimo <- km$tot.withinss
@@ -42,10 +44,18 @@ fn_punto_1 <- function(df = iris[,-5], k = 2, nstart = 100, ...){
         labs(x = "Optimos locales", 
         y = "Cantidad")
 
+    plot_tiempo <- df_kmeans %>%
+        ggplot(aes(x = tiempo)) +
+        geom_histogram() + 
+        theme_minimal() +
+        labs(x = "Tiempo en segundos\n convergencia k-means", 
+        y = "Cantidad")
     #Se retorna una lista de parametros de relevancia para el laboratior
-    return(list(informacion_general = list(df = df_kmeans,
+    return(list(informacion_general = list(df = df,
+            df_kmeans = df_kmeans,
             mejor_km = mejor_km), 
             resumen = list(plot_optimos = plot_optimos,
+            plot_tiempo = plot_tiempo,
             optimo_promedio = optimo_promedio,
             mejor_optimo = mejor_optimo, 
             atraccion_mejor_optimo = atraccion_mejor_optimo

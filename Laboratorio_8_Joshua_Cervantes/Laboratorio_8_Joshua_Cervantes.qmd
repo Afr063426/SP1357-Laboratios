@@ -1,6 +1,6 @@
 ---
 title: Laboratorio 8, Tópicos en análisis datos 1
-author: Joshua Isaac Cervantes Artavia
+author: Joshua Cervantes Artavia - Moisés Monge Cordonero
 date: today
 format: 
     pdf:
@@ -63,7 +63,19 @@ notas_k_3$resumen
 notas_k_4$resumen
 ```
 
+En este caso como es de esperarse así como en los que siguen el mejor resultado se obtiene con 4 clusters. Entonces se reportan los resultados de este método de K means
 
+```{r mejor notas}
+notas_k_4$informacion_general$mejor_km
+```
+
+En este caso se puede observar que el primer cluster es el presenta las nota más altas en general. Mientras que el segundo presenta las mejores notas para idiomas. El tercer cluster presenta buenas notas para mate y física, pero no para el resto, y el último cluster presenta las notas más bajas en términos generales. Además, se tiene que un 78.6% de la inercia es producto de las inercia interclase.
+
+```{r plot notas}
+fn_clusters_km(notas_k_4, etiquetas = rownames(df_notas_escolares))
+```
+
+Mediante el ACP se puede observar una clara separación en la proyección sobre el plano principal.
 
 ## Notas Amiard
 
@@ -80,17 +92,29 @@ df_amiard <- df_amiard[, -1]
 
 
 # We estimate some of the point asked
-notas_k_2 <- fn_punto_1(df = df_amiard, k = 2)
-notas_k_3 <- fn_punto_1(df = df_amiard, k = 3)
-notas_k_4 <- fn_punto_1(df = df_amiard, k = 4)
+amiard_k_2 <- fn_punto_1(df = df_amiard, k = 2)
+amiard_k_3 <- fn_punto_1(df = df_amiard, k = 3)
+amiard_k_4 <- fn_punto_1(df = df_amiard, k = 4)
 
 # We print the summary asked for the point
-notas_k_2$resumen
-notas_k_3$resumen
-notas_k_4$resumen
+amiard_k_2$resumen
+amiard_k_3$resumen
+amiard_k_4$resumen
 ```
 
 
+
+```{r mejor amiard}
+amiard_k_4$informacion_general$mejor_km
+```
+
+Se puede observar que entre más alto mayor es la media de algunas variables en este cluster. En este caso los clusters 2 y 3 presentan el RadHig y RadDis más altos. En el caso de RadEsc el más alto se tiene en el cluster 4.
+
+```{r plot amiard}
+fn_clusters_km(amiard_k_4)
+```
+
+En este caso sí se puede observar una clara separación de los clusters, exceptuando elc aso de los clusters 2 y 3. Que estos presentaban promedios similares según el método de kmeans.
 
 ## Notas proteinas
 
@@ -107,30 +131,59 @@ df_proteinas <- df_proteinas[, -1]
 
 
 # We estimate some of the point asked
-notas_k_2 <- fn_punto_1(df = df_proteinas, k = 2)
-notas_k_3 <- fn_punto_1(df = df_proteinas, k = 3)
-notas_k_4 <- fn_punto_1(df = df_proteinas, k = 4)
+proteinas_k_2 <- fn_punto_1(df = df_proteinas, k = 2)
+proteinas_k_3 <- fn_punto_1(df = df_proteinas, k = 3)
+proteinas_k_4 <- fn_punto_1(df = df_proteinas, k = 4)
 
 
 # We print the summary asked for the point
-notas_k_2$resumen
-notas_k_3$resumen
-notas_k_4$resumen
+proteinas_k_2$resumen
+proteinas_k_3$resumen
+proteinas_k_4$resumen
 ```
 
+
+
+
+```{r mejor proteinas}
+proteinas_k_4$informacion_general$mejor_km
+```
+
+En este caso es interesante observar que la mayoría de los clusters presentan un promedio alto de cerde, pero el que presenta un valor más alto es del segundo cluster. El segundo valor más alto para el primer cluster es pesc y destaca sobre todos los demás clusters por este valor. En el caso del segundo cluster se encuentra que el más alto es cere notablemente por encima de todos los demás, seguido de lech y bajo en pesc. En el caso del tecer cluster este presenta valores superior a 1 para todas las clases por lo que es un cluster más balanceado en conjunto con el 4 que sí destacada en legu que no lo hace este anterior. Se puede observar que en cierta forma siempre se busca compensar las proteínas al no encontrarse en ningún caso un cluster de 0s.
+
+```{r plot proteinas}
+fn_clusters_km(proteinas_k_4, etiquetas = rownames(df_proteinas))
+
+```
+
+En este caso se observa una clara separación de los clusters.
 
 ## Iris
 
 
-```{r kmeans_proteinas}
+```{r kmeans_iris}
 # We estimate some of the point asked
-notas_k_2 <- fn_punto_1(df = iris[, -5], k = 2)
-notas_k_3 <- fn_punto_1(df = iris[, -5], k = 3)
-notas_k_4 <- fn_punto_1(df = iris[, -5], k = 4)
+iris_k_2 <- fn_punto_1(df = iris[, -5], k = 2)
+iris_k_3 <- fn_punto_1(df = iris[, -5], k = 3)
+iris_k_4 <- fn_punto_1(df = iris[, -5], k = 4)
 
 
 # We print the summary asked for the point
-notas_k_2$resumen
-notas_k_3$resumen
-notas_k_4$resumen
+iris_k_2$resumen
+iris_k_3$resumen
+iris_k_4$resumen
+```
+
+```{r means iris}
+iris_k_4$informacion_general$mejor_km
+```
+
+Se puede observar que todos los clusters presentan un largo de sépalo alto. 
+En el caso del cluster 1 se puede obsevar como el ancho del pétalos es realmente bajo. Mientras que en el tercer cluster se destaca un largo de pétalo mayor que en los demás clusters. En el caso del tercer cluster se pueden destacar valores más altos en general. En el caso del segundo se destacan valores más altos que los del primer cluster en términos generales, pero menores que en el cuarto. El cuarto se encuentra detras del tercer cluster en términos generales.
+
+
+
+```{r plot notas}
+fn_clusters_km(iris_k_4, etiquetas = iris[, 5])
+
 ```
