@@ -22,8 +22,8 @@ fn_clusters_km <- function(kmeans, etiquetas = NA){
     df_pc <- as.data.frame(df %*% as.matrix(acp$rotation))
 
     plot_clusters <- ggplot(, aes(x = df_pc$PC1, y = df_pc$PC2, color = factor(clusters), label = etiquetas)) +
-        geom_point(size = 3) + 
-        geom_label(size = 5)+
+        geom_point() + 
+        geom_label()+
         scale_color_brewer(palette="Dark2") + 
         geom_hline(yintercept = 0) +
         geom_vline(xintercept = 0) +

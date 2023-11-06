@@ -183,7 +183,9 @@ En el caso del cluster 1 se puede obsevar como el ancho del pétalos es realment
 
 
 
-```{r plot notas}
+```{r plot iris}
 fn_clusters_km(iris_k_4, etiquetas = iris[, 5])
 
 ```
+
+Se puede observar una clara separación de los clusters, pero es interesante que en la proyección todos se encuentran relamente cercanos.
